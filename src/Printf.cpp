@@ -6,109 +6,96 @@
 #include <stdarg.h>
 #include <cstdio>
 
-char hex[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+char digits[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+char dec[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+char bin[] = {'0', '1'};
 
-extern char *itoa(int, char *, int);
 
-void integer_to_bin(int integer, char *string)
-{
-	// Write 0b
-	int index = 0;
-	string[index++] = '0';
-	string[index++] = 'b';
-	int temp = integer;
+char *intToBaseString(char *destination, const void *end, int value, unsigned int base, bool prefix) {
+    if (destination >= end) return nullptr;
 
-	while (temp > 0) {
-		temp /= 2;
-		index++;
-	}
-	while (integer > 0) {
-		string[index--] = static_cast<char>(integer % 2);
-		integer /= 2;
-	}
+    if (value < 0) {
+        *destination = '-';
+        destination++;
+        value = 0 - value;
+    }
+
+    if (prefix) {
+        if (2 == base) {
+            *destination = '0';
+            destination++;
+            *destination = 'b';
+            destination++;
+        }
+        if(16 == base){
+            *destination = '0';
+            destination++;
+            *destination = 'x';
+            destination++;
+        }
+    }
+
+
+    if (destination >= end) return nullptr;
+
+    char digit = digits[value % base];    //get char from array "digits"
+    value = value / base;                 //shift the value by the amount of base
+
+    //recursion if the there are still digits left
+    if (value) {
+        destination = intToBaseString(destination, end, value, base, false);
+        destination++;
+    }
+
+    *destination = digit;    //write the digit
+    return destination;    //increase and return the pointer
 }
 
-void integer_to_hex(int integer, char string[])
-{
-	// Write 0x
-	int index = 0;
-	string[index++] = '0';
-	string[index++] = 'x';
-	int temp = integer;
+char *Printf(char *destination, const void *end, const char *formatstring, ...) {
+    const char *format;
+    va_list argp;
+    int i;
+    char *s;
+    //char fmtbuf[256];
 
-	while (temp > 0) {
-		temp /= 16;
-		index++;
-	}
+    va_start(argp, formatstring);
 
-	while (integer > 0) {
-		string[index--] = hex[(integer % 16)];
-		integer /= 16;
-	}
-}
+    for (format = formatstring; *format != '\0' && format != end; format++) {
+        if (*format != '%') {
+            putchar(*format);
+            continue;
+        }
 
-void integer_to_dec(int integer, char *string)
-{
-	int index = 0;
-	int temp = integer;
+        switch (*++format) {
+            case 'c':
+                i = va_arg(argp, int);
+                putchar(i);
+                break;
 
-	while (temp > 0) {
-		temp /= 10;
-		index++;
-	}
+            case 'd':
+                i = va_arg(argp, int);
+                intToBaseString(destination, end, i, 10, false);
+                fputs(s, stdout);
+                break;
 
-	while (integer > 0) {
-		string[index--] = static_cast<char>(integer % 10);
-		integer /= 10;
-	}
-}
+            case 's':
+                s = va_arg(argp, char *);
+                fputs(s, stdout);
+                break;
 
-char *Printf(char *destination, const void *end, const char *formatstring, ...)
-{
-	const char *format;
-	va_list argp;
-	int i;
-	char *s;
-	char fmtbuf[256];
+            case 'x':
+                i = va_arg(argp, int);
+//			s = itoa(i, fmtbuf, 16);
+                fputs(s, stdout);
+                break;
 
-	va_start(argp, formatstring);
+            case '%':
+                putchar('%');
+                break;
+        }
+    }
 
-	for (format = formatstring; *format != '\0' && format != end; format++) {
-		if (*format != '%') {
-			putchar(*format);
-			continue;
-		}
+    va_end(argp);
 
-		switch (*++format) {
-		case 'c':
-			i = va_arg(argp, int);
-			putchar(i);
-			break;
-
-		case 'd':
-			i = va_arg(argp, int);
-			integer_to_dec(i, destination);
-			fputs(s, stdout);
-			break;
-
-		case 's':
-			s = va_arg(argp, char *);
-			fputs(s, stdout);
-			break;
-
-		case 'x':
-			i = va_arg(argp, int);
-			s = itoa(i, fmtbuf, 16);
-			fputs(s, stdout);
-			break;
-
-		case '%':
-			putchar('%');
-			break;
-		}
-	}
-
-	va_end(argp);
-
-	return destination;
+    return destination;
 }
