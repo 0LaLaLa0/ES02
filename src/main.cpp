@@ -1,30 +1,17 @@
 #include <iostream>
 #include "../include/Printf.h"
 
-char _hex[] = {'0', '1', '2'};
-
 void init(char _string[]){
-    for (int i = 0; i < 42; i++){
+    for (int i = 0; i < 4; i++){
         _string[i] = 0;
     }
 }
 
 int main() {
-    char _string[42];
+    char _string[4];
 
-    init(_string);
-    intToBaseString(_string,_string+42,10,2, true);
+    Printf(_string, _string+3, "%z%d%s", -2000000, "testString", 'c', -42, -42, 42, 42);
     std::cout << _string << std::endl;
-
-    init(_string);
-    intToBaseString(_string,_string+42,-10,10, false);
-    std::cout << _string << std::endl;
-
-    init(_string);
-    intToBaseString(_string,_string+42,10,16, true);
-    std::cout << _string << std::endl;
-
-    Printf(nullptr, nullptr, "");
     return 0;
 }
 

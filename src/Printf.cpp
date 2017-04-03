@@ -7,9 +7,22 @@
 #include <cstdio>
 
 char digits[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-char dec[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-char bin[] = {'0', '1'};
 
+char *intToBaseString(char *destination, const void *end, unsigned int value) {
+    if (destination >= end) return nullptr;
+
+    char digit = digits[value % 10];    //get char from array "digits"
+    value = value / 10;                 //shift the value by the amount of base
+
+    //recursion if the there are still digits left
+    if (value) {
+        destination = intToBaseString(destination, end, value);
+        destination++;
+    }
+
+    *destination = digit;    //write the digit
+    return destination;    //increase and return the pointer
+}
 
 char *intToBaseString(char *destination, const void *end, int value, unsigned int base, bool prefix) {
     if (destination >= end) return nullptr;
@@ -20,18 +33,14 @@ char *intToBaseString(char *destination, const void *end, int value, unsigned in
         value = 0 - value;
     }
 
-    if (prefix) {
+    if (prefix && destination + 2) {
         if (2 == base) {
-            *destination = '0';
-            destination++;
-            *destination = 'b';
-            destination++;
+            *destination++ = '0';
+            *destination++ = 'b';
         }
-        if(16 == base){
-            *destination = '0';
-            destination++;
-            *destination = 'x';
-            destination++;
+        if (16 == base) {
+            *destination++ = '0';
+            *destination++ = 'x';
         }
     }
 
@@ -42,12 +51,11 @@ char *intToBaseString(char *destination, const void *end, int value, unsigned in
     value = value / base;                 //shift the value by the amount of base
 
     //recursion if the there are still digits left
-    if (value) {
+    if (value && destination < end) {
         destination = intToBaseString(destination, end, value, base, false);
         destination++;
     }
-
-    *destination = digit;    //write the digit
+    if (destination) *destination = digit;    //write the digit
     return destination;    //increase and return the pointer
 }
 
@@ -55,43 +63,65 @@ char *Printf(char *destination, const void *end, const char *formatstring, ...) 
     const char *format;
     va_list argp;
     int i;
+    unsigned int ui;
     char *s;
-    //char fmtbuf[256];
 
     va_start(argp, formatstring);
 
-    for (format = formatstring; *format != '\0' && format != end; format++) {
+    for (format = formatstring; *format != '\0' && format < end; format++) {
         if (*format != '%') {
-            putchar(*format);
+            *destination = *format;
+            destination++;
             continue;
         }
 
         switch (*++format) {
             case 'c':
                 i = va_arg(argp, int);
-                putchar(i);
+                *destination = i;
                 break;
 
             case 'd':
                 i = va_arg(argp, int);
-                intToBaseString(destination, end, i, 10, false);
-                fputs(s, stdout);
+                destination = intToBaseString(destination, end, i, 10, false);
+                destination++;
+                break;
+
+            case 'u':
+                ui = va_arg(argp, unsigned
+                        int);
+                destination = intToBaseString(destination, end, ui, 10, false);
+                destination++;
                 break;
 
             case 's':
                 s = va_arg(argp, char *);
-                fputs(s, stdout);
+                while (*s && destination < end) {
+                    *destination = *s;
+                    s++;
+                    destination++;
+                }
                 break;
 
             case 'x':
                 i = va_arg(argp, int);
-//			s = itoa(i, fmtbuf, 16);
-                fputs(s, stdout);
+                destination = intToBaseString(destination, end, i, 16, true);
+                break;
+
+            case 'b':
+                i = va_arg(argp, int);
+                destination = intToBaseString(destination, end, i, 2, true);
                 break;
 
             case '%':
-                putchar('%');
+                *destination = '%';
                 break;
+
+            default:
+                *destination = *format;
+        }
+        if (destination < end) {
+            *++destination = 0;
         }
     }
 
