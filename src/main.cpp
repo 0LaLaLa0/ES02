@@ -1,17 +1,23 @@
-#include <iostream>
 #include "../include/Printf.h"
+#include <iostream>
 
-void init(char _string[]){
-    for (int i = 0; i < 4; i++){
-        _string[i] = 0;
-    }
+int main()
+{
+	char buffer[1024];
+	char tinyBuffer[10];
+
+	unsigned int test = 42;
+
+	//testing
+	Printf(buffer, buffer + 1023, "Forty Two %d %u %c %s %x %b %%", -42, test, '*', "Forty Two", 42, 42);
+	std::cout << buffer << "\n";
+
+	Printf(tinyBuffer, tinyBuffer + 9, "A String That is too long for the buffer");
+	std::cout << tinyBuffer << "\n";
+
+	Printf(buffer, buffer + 1023, "%w %%%");
+	std::cout << buffer << "\n";
+
+	Printf(buffer, buffer + 1023, "");
+	std::cout << buffer << "\n";
 }
-
-int main() {
-    char _string[15];
-
-    Printf(_string, _string+14, "%%%z%d%s%c%b%x", -2000000, "testString", 'c', -42, -42, 42, 42);
-    std::cout << _string << std::endl;
-    return 0;
-}
-

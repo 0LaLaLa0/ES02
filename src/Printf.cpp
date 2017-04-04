@@ -9,7 +9,12 @@ char digits[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c'
 
 char *intToBaseString(char *destination, const void *end, unsigned int value)
 {
-	if (destination >= end) return nullptr;
+	if (destination > end) return destination;
+
+	if (destination == end) {   // Return if we are at the end
+		*destination = 0;
+		return destination;
+	}
 
 	char digit = digits[value % 10];    //get char from array "digits"
 	value = value / 10;                 //shift the value by the amount of base
@@ -30,7 +35,12 @@ char *intToBaseString(char *destination, const void *end, unsigned int value)
 
 char *intToBaseString(char *destination, const void *end, int value, unsigned int base, bool prefix)
 {
-	if (destination >= end) return nullptr;
+	if (destination > end) return destination;
+
+	if (destination == end) {   // Return if we are at the end
+		*destination = 0;
+		return destination;
+	}
 
 	if (value < 0) {    // Minus for negative number
 		*destination = '-';
@@ -82,12 +92,19 @@ char *Printf(char *destination, const void *end, const char *formatstring, ...)
 
 	va_start(argp, formatstring);
 
+	if(*formatstring == 0){
+		*destination = 0;
+		return destination;
+	}
+
 	for (format = formatstring; *format != '\0' && destination < end; format++) {
 		if (*format != '%') {
 			*destination = *format;
-			if (destination < end)
-				destination++;
-			else return destination;
+			destination++;
+			if (destination == end) {
+				*destination = 0;
+				return destination;
+			}
 			continue;
 		}
 
@@ -95,13 +112,17 @@ char *Printf(char *destination, const void *end, const char *formatstring, ...)
 		case 'c':
 			i = va_arg(argp, int);
 			*destination++ = i;
+			if (destination == end) {   // Return if we are at the end
+				*destination = 0;
+				return destination;
+			}
 			break;
 
 		case 'd':
 			i = va_arg(argp, int);
 			destination = intToBaseString(destination, end, i, 10, false);
-			if (destination + 1 == end) {
-				*++destination = 0;
+			if (destination == end) {   // Return if we are at the end
+				*destination = 0;
 				return destination;
 			}
 			destination++;
@@ -111,8 +132,8 @@ char *Printf(char *destination, const void *end, const char *formatstring, ...)
 			ui = va_arg(argp, unsigned
 					int);
 			destination = intToBaseString(destination, end, ui);
-			if (destination + 1 == end) {
-				*++destination = 0;
+			if (destination == end) {   // Return if we are at the end
+				*destination = 0;
 				return destination;
 			}
 			destination++;
@@ -125,7 +146,7 @@ char *Printf(char *destination, const void *end, const char *formatstring, ...)
 				s++;
 				destination++;
 			}
-			if (destination == end) {
+			if (destination == end) {   // Return if we are at the end
 				*destination = 0;
 				return destination;
 			}
@@ -134,8 +155,8 @@ char *Printf(char *destination, const void *end, const char *formatstring, ...)
 		case 'x':
 			i = va_arg(argp, int);
 			destination = intToBaseString(destination, end, i, 16, true);
-			if (destination + 1 == end) {
-				*++destination = 0;
+			if (destination == end) {   // Return if we are at the end
+				*destination = 0;
 				return destination;
 			}
 			break;
@@ -143,18 +164,33 @@ char *Printf(char *destination, const void *end, const char *formatstring, ...)
 		case 'b':
 			i = va_arg(argp, int);
 			destination = intToBaseString(destination, end, i, 2, true);
-			if (destination + 1 == end) {
-				*++destination = 0;
+			if (destination == end) {   // Return if we are at the end
+				*destination = 0;
 				return destination;
 			}
 			break;
 
 		case '%':
-			*destination = '%';
+			*destination++ = '%';
+			if (destination == end) {   // Return if we are at the end
+				*destination = 0;
+				return destination;
+			}
 			break;
 
 		default:
-			*destination = *format;
+			*destination++ = '%';
+
+			if (destination == end) {   // Return if we are at the end
+				*destination = 0;
+				return destination;
+			}
+
+			*destination++ = *format;
+			if (destination == end) {   // Return if we are at the end
+				*destination = 0;
+				return destination;
+			}
 		}
 		if (destination && destination < end) {
 			*destination = 0;
