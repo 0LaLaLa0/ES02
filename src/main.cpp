@@ -10,7 +10,7 @@ void init(char _string[]){
 int main() {
     char _string[15];
 
-    Printf(_string, _string+14, "%%%z%d%s", -2000000, "testString", 'c', -42, -42, 42, 42);
+    Printf(_string, _string+14, "%%%z%d%s%c%b%x", -2000000, "testString", 'c', -42, -42, 42, 42);
     std::cout << _string << std::endl;
     return 0;
 }
