@@ -92,7 +92,11 @@ char *Printf(char *destination, const void *end, const char *formatstring, ...)
 
 	va_start(argp, formatstring);
 
-	if(*formatstring == 0){
+	if(!destination){
+		return nullptr;
+	}
+
+	if(!formatstring || *formatstring == 0 || destination >= end || !end){
 		*destination = 0;
 		return destination;
 	}
